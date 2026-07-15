@@ -2,6 +2,7 @@ import { AlarmClock, ArrowRight, CalendarPlus, ChevronRight, Clock3, Coffee, Foc
 import { useMemo, useState } from 'react'
 import { formatKoreanDate, isRestDay, plannedAndActualProgress, todayKey } from '../lib/dates'
 import { formatDday, getDday } from '../lib/deadlines'
+import { actualStudyMinutes, formatStudyMinutes, plannedStudyMinutes } from '../lib/studyTime'
 import { ScheduleRow } from '../components/ScheduleRow'
 import { usePlanner } from '../store/PlannerContext'
 
@@ -15,8 +16,8 @@ export function TodayView({ onOpenTimer, onAddItem, onAddPlan }: { onOpenTimer: 
   const studyItems = items.filter((item) => Boolean(item.planId))
   const otherItems = items.filter((item) => !item.planId)
   const completed = items.filter((item) => item.status === 'completed').length
-  const estimated = items.filter((item) => item.status !== 'completed').reduce((sum, item) => sum + item.estimatedMinutes, 0)
-  const actual = items.reduce((sum, item) => sum + (item.actualMinutes ?? 0), 0)
+  const estimated = items.filter((item) => item.status !== 'completed').reduce((sum, item) => sum + plannedStudyMinutes(item), 0)
+  const actual = items.reduce((sum, item) => sum + actualStudyMinutes(item), 0)
   const rest = isRestDay(today, data?.settings.defaultRestWeekdays ?? [0])
   const primaryPlan = data?.plans.find((plan) => plan.status === 'active')
   const progress = primaryPlan ? plannedAndActualProgress(primaryPlan.id, data?.items ?? []) : null
@@ -37,7 +38,7 @@ export function TodayView({ onOpenTimer, onAddItem, onAddPlan }: { onOpenTimer: 
       <div className="focus-summary">
         <div className="section-label"><span>오늘의 핵심 목표</span><small>{completed}/{items.length} 완료</small></div>
         <h2>{studyItems.find((item) => item.status !== 'completed')?.title ?? (items.length ? '오늘의 계획을 모두 마쳤어요' : '아직 정해진 계획이 없어요')}</h2>
-        <div className="summary-meta"><span><Clock3 size={16} /> 남은 예상 {estimated}분</span><span><TimerReset size={16} /> 실제 {actual}분</span>{nextDeadline && <span className="deadline-summary"><CalendarPlus size={16} /> {formatDday(getDday(nextDeadline, today))} · {nextDeadline.title}</span>}</div>
+        <div className="summary-meta"><span><Clock3 size={16} /> 남은 예상 {formatStudyMinutes(estimated)}</span><span><TimerReset size={16} /> 완료 공부 {formatStudyMinutes(actual)}</span>{nextDeadline && <span className="deadline-summary"><CalendarPlus size={16} /> {formatDday(getDday(nextDeadline, today))} · {nextDeadline.title}</span>}</div>
         {!rest && <button className="primary-button" onClick={onOpenTimer}><AlarmClock size={18} /> 집중 타이머 시작</button>}
       </div>
       <div className="day-progress">

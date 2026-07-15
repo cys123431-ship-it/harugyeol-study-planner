@@ -8,6 +8,7 @@ import { chooseNewestPlannerData, readCloudSnapshot, writeCloudSnapshot, type Sy
 import { fromDateKey, generateScheduleForPlan, protectCompletedAndRegenerate, toDateKey } from '../lib/dates'
 import { archiveExpiredDeadlinePlans } from '../lib/deadlines'
 import { createId } from '../lib/ids'
+import { timeRangeMinutes } from '../lib/studyTime'
 import type {
   AppSettings,
   CategoryType,
@@ -38,7 +39,7 @@ interface PlannerContextValue {
   updatePlan: (draft: PlanDraft, stages?: Omit<PlanStage, 'id' | 'planId'>[]) => void
   deletePlan: (id: string) => void
   duplicatePlan: (id: string) => void
-  addManualItem: (item: Pick<ScheduleItem, 'title' | 'date' | 'estimatedMinutes' | 'startTime' | 'notes' | 'priority' | 'categoryId'>) => void
+  addManualItem: (item: Pick<ScheduleItem, 'title' | 'date' | 'estimatedMinutes' | 'startTime' | 'endTime' | 'notes' | 'priority' | 'categoryId'>) => void
   updateItem: (id: string, patch: Partial<ScheduleItem>) => void
   editScheduleOccurrence: (id: string, patch: Partial<ScheduleItem>, scope: OccurrenceEditScope) => void
   toggleComplete: (id: string, actualMinutes?: number) => void
@@ -193,7 +194,7 @@ export function PlannerProvider({ children, cloudUser = null }: { children: Reac
     setToast('계획 복사본을 만들었습니다.')
   }, [])
 
-  const addManualItem = useCallback((item: Pick<ScheduleItem, 'title' | 'date' | 'estimatedMinutes' | 'startTime' | 'notes' | 'priority' | 'categoryId'>) => {
+  const addManualItem = useCallback((item: Pick<ScheduleItem, 'title' | 'date' | 'estimatedMinutes' | 'startTime' | 'endTime' | 'notes' | 'priority' | 'categoryId'>) => {
     setData((current) => {
       if (!current) return current
       const now = new Date().toISOString()
@@ -272,7 +273,7 @@ export function PlannerProvider({ children, cloudUser = null }: { children: Reac
         ...item,
         status: completing ? 'completed' : 'scheduled',
         completedAt: completing ? new Date().toISOString() : undefined,
-        actualMinutes: completing ? (actualMinutes ?? item.actualMinutes ?? item.estimatedMinutes) : undefined,
+        actualMinutes: completing ? (actualMinutes ?? item.actualMinutes ?? timeRangeMinutes(item.startTime, item.endTime) ?? item.estimatedMinutes) : undefined,
         actualSequence,
         updatedAt: new Date().toISOString(),
       } : item) })
