@@ -1,0 +1,53 @@
+{
+  "name": "haru-planner",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.local.config.ts",
+    "build": "vinext build",
+    "start": "vinext start",
+    "lint": "eslint .",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "test:e2e": "playwright test",
+    "preview": "vinext start",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "date-fns": "4.1.0",
+    "dexie": "4.4.4",
+    "drizzle-orm": "0.45.2",
+    "lucide-react": "0.468.0",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/workers-types": "5.20260715.1",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.61.1",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
+    "drizzle-kit": "0.31.10",
+    "eslint": "10.7.0",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-react-refresh": "0.5.2",
+    "fake-indexeddb": "6.2.5",
+    "globals": "17.4.0",
+    "jsdom": "29.0.1",
+    "react-server-dom-webpack": "19.2.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.64.0",
+    "vinext": "0.0.50",
+    "vite": "8.0.13",
+    "vitest": "4.1.10",
+    "wrangler": "4.92.0"
+  }
+}
