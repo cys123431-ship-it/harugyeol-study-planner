@@ -2,7 +2,7 @@
 
 import { addDays, differenceInCalendarDays } from 'date-fns'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { createEmptyData, createSampleData, ensureAugustCurriculum } from '../data/seed'
+import { createEmptyData, createSampleData, ensureAugustCurriculum, ensureCertificateStartDate } from '../data/seed'
 import { createBackup, readAllData, validateBackup, writeAllData } from '../data/database'
 import { chooseNewestPlannerData, readCloudSnapshot, writeCloudSnapshot, type SyncStatus } from '../data/cloudSync'
 import { fromDateKey, generateScheduleForPlan, protectCompletedAndRegenerate, toDateKey } from '../lib/dates'
@@ -82,12 +82,15 @@ export function PlannerProvider({ children, cloudUser = null }: { children: Reac
             if (active) setSyncStatus(navigator.onLine ? 'error' : 'offline')
           }
         }
-        const migration = selected ? ensureAugustCurriculum(selected) : null
-        const ready = migration ? archiveExpiredDeadlinePlans(migration.data) : null
+        const augustMigration = selected ? ensureAugustCurriculum(selected) : null
+        const certificateMigration = augustMigration ? ensureCertificateStartDate(augustMigration.data) : null
+        const ready = certificateMigration ? archiveExpiredDeadlinePlans(certificateMigration.data) : null
         if (active) {
           setData(ready)
           setNeedsOnboarding(!ready)
-          if (migration?.added) setToast('요청한 8월 4과목 계획을 기존 기록에 추가했습니다.')
+          if (augustMigration?.added && certificateMigration?.changed) setToast('8월 계획을 추가하고 정처기 일정을 7월 16일 시작으로 변경했습니다.')
+          else if (augustMigration?.added) setToast('요청한 8월 4과목 계획을 기존 기록에 추가했습니다.')
+          else if (certificateMigration?.changed) setToast('정처기 24일 계획을 7월 16일 시작으로 변경했습니다.')
         }
       } catch {
         if (active) {
@@ -365,10 +368,14 @@ export function PlannerProvider({ children, cloudUser = null }: { children: Reac
 
   const restoreBackup = useCallback((value: unknown) => {
     const backup = validateBackup(value)
-    const migrated = ensureAugustCurriculum(backup.data)
-    setData(touchData(migrated.data))
+    const augustMigration = ensureAugustCurriculum(backup.data)
+    const certificateMigration = ensureCertificateStartDate(augustMigration.data)
+    setData(touchData(certificateMigration.data))
     setNeedsOnboarding(false)
-    setToast(migrated.added ? '백업을 복원하고 8월 4과목 계획을 추가했습니다.' : '백업 데이터를 복원했습니다.')
+    if (augustMigration.added && certificateMigration.changed) setToast('백업을 복원하고 8월 계획과 정처기 새 일정을 적용했습니다.')
+    else if (augustMigration.added) setToast('백업을 복원하고 8월 4과목 계획을 추가했습니다.')
+    else if (certificateMigration.changed) setToast('백업을 복원하고 정처기 일정을 7월 16일 시작으로 변경했습니다.')
+    else setToast('백업 데이터를 복원했습니다.')
   }, [])
 
   const exportBackup = useCallback(() => {

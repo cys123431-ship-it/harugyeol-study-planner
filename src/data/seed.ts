@@ -4,6 +4,8 @@ import { createAugustCurriculumItems } from './augustCurriculum'
 
 export const AUGUST_PLAN_ID = 'plan-august-four-subjects'
 export const AUGUST_CURRICULUM_MIGRATION_ID = '2026-august-four-subjects-v1'
+export const CERTIFICATE_PLAN_ID = 'plan-certificate-24'
+export const CERTIFICATE_START_MIGRATION_ID = 'certificate-start-2026-07-16-v1'
 
 export const defaultSettings: AppSettings = {
   timezone: 'Asia/Seoul',
@@ -65,12 +67,12 @@ function createAugustTemplate(categoryId: string) {
 
 export function createSampleData(): PlannerData {
   const certificatePlan = basePlan({
-    id: 'plan-certificate-24',
+    id: CERTIFICATE_PLAN_ID,
     title: '정보처리기사 실기 24일 완성',
     description: '일요일을 제외한 24번의 학습으로 실기 범위를 완주합니다.',
     categoryId: 'cat-cert',
     planType: 'count',
-    startDate: '2026-07-15',
+    startDate: '2026-07-16',
     targetCount: 24,
     targetMinutes: 70,
     color: '#75a99f',
@@ -102,11 +104,11 @@ export function createSampleData(): PlannerData {
     ...generateCumulativeSchedule(cumulativePlan, cumulativeStages, defaultSettings),
     ...augustTemplate.items,
   ]
-  return { plans, stages, items, categories, reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
+  return { plans, stages, items, categories, reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID, CERTIFICATE_START_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
 }
 
 export function createEmptyData(): PlannerData {
-  return { plans: [], stages: [], items: [], categories: [...categories], reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
+  return { plans: [], stages: [], items: [], categories: [...categories], reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID, CERTIFICATE_START_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
 }
 
 export function ensureAugustCurriculum(data: PlannerData): { data: PlannerData; added: boolean } {
@@ -141,6 +143,37 @@ export function ensureAugustCurriculum(data: PlannerData): { data: PlannerData; 
       plans: [...data.plans, template.plan],
       stages: [...data.stages.filter((stage) => stage.planId !== AUGUST_PLAN_ID && !stageIds.has(stage.id)), ...template.stages],
       items: [...data.items.filter((item) => item.planId !== AUGUST_PLAN_ID && !item.id.startsWith('item-august-')), ...template.items],
+      settings: nextSettings,
+    },
+  }
+}
+
+export function ensureCertificateStartDate(data: PlannerData): { data: PlannerData; changed: boolean } {
+  const appliedMigrations = data.settings.appliedMigrations ?? []
+  if (appliedMigrations.includes(CERTIFICATE_START_MIGRATION_ID)) return { data, changed: false }
+
+  const now = new Date().toISOString()
+  const nextSettings = {
+    ...data.settings,
+    appliedMigrations: [...appliedMigrations, CERTIFICATE_START_MIGRATION_ID],
+    lastModifiedAt: now,
+  }
+  const plan = data.plans.find((candidate) => candidate.id === CERTIFICATE_PLAN_ID)
+  if (!plan) return { data: { ...data, settings: nextSettings }, changed: false }
+
+  const updatedPlan = { ...plan, startDate: '2026-07-16', updatedAt: now }
+  const generated = generateCountSchedule(updatedPlan, data.settings)
+  const dateBySequence = new Map(generated.map((item) => [item.plannedSequence, item.date]))
+  return {
+    changed: true,
+    data: {
+      ...data,
+      plans: data.plans.map((candidate) => candidate.id === CERTIFICATE_PLAN_ID ? updatedPlan : candidate),
+      items: data.items.map((item) => {
+        if (item.planId !== CERTIFICATE_PLAN_ID || !item.plannedSequence) return item
+        const date = dateBySequence.get(item.plannedSequence)
+        return date ? { ...item, date, updatedAt: now } : item
+      }),
       settings: nextSettings,
     },
   }

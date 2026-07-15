@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { AUGUST_CURRICULUM_MIGRATION_ID, AUGUST_PLAN_ID, createEmptyData, createSampleData, ensureAugustCurriculum } from './seed'
+import { nthEligibleDate } from '../lib/dates'
+import {
+  AUGUST_CURRICULUM_MIGRATION_ID,
+  AUGUST_PLAN_ID,
+  CERTIFICATE_PLAN_ID,
+  CERTIFICATE_START_MIGRATION_ID,
+  createEmptyData,
+  createSampleData,
+  ensureAugustCurriculum,
+  ensureCertificateStartDate,
+} from './seed'
 
 describe('8월 계획 데이터 보강', () => {
   it('기존 기록을 보존하면서 빠진 8월 계획과 104개 일정을 한 번만 추가한다', () => {
@@ -38,5 +48,44 @@ describe('8월 계획 데이터 보강', () => {
     expect(result.added).toBe(false)
     expect(result.data.plans.filter((plan) => plan.id === AUGUST_PLAN_ID)).toHaveLength(1)
     expect(result.data.settings.appliedMigrations).toContain(AUGUST_CURRICULUM_MIGRATION_ID)
+  })
+})
+
+describe('정처기 시작일 데이터 변경', () => {
+  it('24개 일정의 날짜를 7월 16일 시작으로 다시 계산하고 기존 기록은 보존한다', () => {
+    const sample = createSampleData()
+    const legacy = {
+      ...sample,
+      plans: sample.plans.map((plan) => plan.id === CERTIFICATE_PLAN_ID ? { ...plan, startDate: '2026-07-15' } : plan),
+      items: sample.items.map((item) => item.planId === CERTIFICATE_PLAN_ID && item.plannedSequence
+        ? {
+            ...item,
+            date: nthEligibleDate('2026-07-15', item.plannedSequence, [0]),
+            status: item.plannedSequence === 1 ? 'completed' as const : item.status,
+            actualMinutes: item.plannedSequence === 1 ? 65 : item.actualMinutes,
+            notes: item.plannedSequence === 1 ? '사용자가 남긴 메모' : item.notes,
+          }
+        : item),
+      settings: { ...sample.settings, appliedMigrations: sample.settings.appliedMigrations.filter((id) => id !== CERTIFICATE_START_MIGRATION_ID) },
+    }
+
+    const first = ensureCertificateStartDate(legacy)
+    const certificateItems = first.data.items.filter((item) => item.planId === CERTIFICATE_PLAN_ID).sort((a, b) => (a.plannedSequence ?? 0) - (b.plannedSequence ?? 0))
+    expect(first.changed).toBe(true)
+    expect(first.data.plans.find((plan) => plan.id === CERTIFICATE_PLAN_ID)?.startDate).toBe('2026-07-16')
+    expect(certificateItems).toHaveLength(24)
+    expect(certificateItems[0]).toMatchObject({ date: '2026-07-16', status: 'completed', actualMinutes: 65, notes: '사용자가 남긴 메모' })
+    expect(certificateItems.at(-1)).toMatchObject({ date: '2026-08-12', plannedSequence: 24 })
+    expect(certificateItems.some((item) => new Date(`${item.date}T12:00:00`).getDay() === 0)).toBe(false)
+
+    const second = ensureCertificateStartDate(first.data)
+    expect(second.changed).toBe(false)
+    expect(second.data).toBe(first.data)
+  })
+
+  it('정처기 계획이 없는 빈 플래너에는 계획을 새로 만들지 않는다', () => {
+    const empty = createEmptyData()
+    expect(empty.settings.appliedMigrations).toContain(CERTIFICATE_START_MIGRATION_ID)
+    expect(ensureCertificateStartDate(empty)).toEqual({ data: empty, changed: false })
   })
 })

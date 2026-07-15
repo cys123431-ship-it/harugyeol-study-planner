@@ -31,11 +31,11 @@ describe('예시 계획 생성', () => {
   const majorPlan = sample.plans.find((plan) => plan.id === 'plan-major-july')!
   const augustPlan = sample.plans.find((plan) => plan.id === 'plan-august-four-subjects')!
 
-  it('정보처리기사 Day 1과 Day 24를 정확히 만든다', () => {
+  it('정보처리기사 일정을 7월 16일부터 시작해 Day 24까지 정확히 만든다', () => {
     const items = generateCountSchedule(certificatePlan, defaultSettings)
     expect(items).toHaveLength(24)
-    expect(items[0]).toMatchObject({ date: '2026-07-15', plannedSequence: 1, title: '정보처리기사 실기 · Day 1' })
-    expect(items.at(-1)).toMatchObject({ date: '2026-08-11', plannedSequence: 24, title: '정보처리기사 실기 · Day 24' })
+    expect(items[0]).toMatchObject({ date: '2026-07-16', plannedSequence: 1, title: '정보처리기사 실기 · Day 1' })
+    expect(items.at(-1)).toMatchObject({ date: '2026-08-12', plannedSequence: 24, title: '정보처리기사 실기 · Day 24' })
   })
 
   it.each(['2026-07-19', '2026-07-26', '2026-08-02', '2026-08-09'])('%s 일요일에는 자동 학습을 만들지 않는다', (date) => {
