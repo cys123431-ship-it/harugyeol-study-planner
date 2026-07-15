@@ -39,6 +39,7 @@ export async function readAllData(): Promise<PlannerData | null> {
     notificationsEnabled: settingsRow.notificationsEnabled,
     reducedMotion: settingsRow.reducedMotion,
     fontScale: settingsRow.fontScale,
+    appliedMigrations: settingsRow.appliedMigrations ?? [],
     lastModifiedAt: settingsRow.lastModifiedAt ?? new Date(0).toISOString(),
   }
   return { plans, stages, items, categories, reflections, settings }

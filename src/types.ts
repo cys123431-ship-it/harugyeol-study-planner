@@ -98,6 +98,7 @@ export interface AppSettings {
   notificationsEnabled: boolean
   reducedMotion: boolean
   fontScale: number
+  appliedMigrations: string[]
   lastModifiedAt: string
 }
 
