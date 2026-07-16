@@ -1,4 +1,5 @@
 import type { Plan, PlanStage, ScheduleItem } from '../types'
+import { nthEligibleDate } from '../lib/dates'
 
 interface CurriculumDay {
   date: string
@@ -47,18 +48,20 @@ const subjectConfig = {
 export function createAugustCurriculumItems(plan: Plan, stages: PlanStage[]): ScheduleItem[] {
   const now = '2026-07-15T09:00:00+09:00'
   const stageByTitle = new Map(stages.map((stage) => [stage.title, stage]))
+  const restWeekdays = [...new Set([0, ...plan.excludedWeekdays])]
 
   return augustCurriculum.flatMap((day, dayIndex) =>
     (Object.keys(subjectConfig) as Array<keyof typeof subjectConfig>).map((key) => {
       const config = subjectConfig[key]
       const detail = day[key]
       const summary = detail.split(' / ')[0]
+      const date = nthEligibleDate(plan.startDate, dayIndex + 1, restWeekdays, plan.excludedDates)
       return {
-        id: `item-august-${day.date}-${key}`,
+        id: `item-august-${date}-${key}`,
         planId: plan.id,
         stageId: stageByTitle.get(config.title)?.id,
         title: `${config.title} · ${summary}`,
-        date: day.date,
+        date,
         allDay: true,
         plannedSequence: dayIndex + 1,
         status: 'scheduled',

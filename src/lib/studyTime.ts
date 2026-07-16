@@ -11,8 +11,8 @@ export function timeRangeMinutes(startTime?: string, endTime?: string): number |
   const startMinutes = Number(start[1]) * 60 + Number(start[2])
   const endMinutes = Number(end[1]) * 60 + Number(end[2])
   if (startMinutes < 0 || startMinutes >= 24 * 60 || endMinutes < 0 || endMinutes >= 24 * 60) return null
-  const duration = endMinutes - startMinutes
-  return duration > 0 ? duration : null
+  if (endMinutes === startMinutes) return null
+  return endMinutes > startMinutes ? endMinutes - startMinutes : endMinutes + 24 * 60 - startMinutes
 }
 
 export function plannedStudyMinutes(item: ScheduleItem): number {

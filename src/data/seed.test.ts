@@ -5,10 +5,15 @@ import {
   AUGUST_PLAN_ID,
   CERTIFICATE_PLAN_ID,
   CERTIFICATE_START_MIGRATION_ID,
+  EXERCISE_PLAN_ID,
+  MAJOR_PLAN_ID,
+  STUDY_CAFE_PLAN_ID,
+  SUMMER_ROUTINE_MIGRATION_ID,
   createEmptyData,
   createSampleData,
   ensureAugustCurriculum,
   ensureCertificateStartDate,
+  ensureSummerRoutine,
 } from './seed'
 
 describe('8월 계획 데이터 보강', () => {
@@ -87,5 +92,73 @@ describe('정처기 시작일 데이터 변경', () => {
     const empty = createEmptyData()
     expect(empty.settings.appliedMigrations).toContain(CERTIFICATE_START_MIGRATION_ID)
     expect(ensureCertificateStartDate(empty)).toEqual({ data: empty, changed: false })
+  })
+})
+
+describe('7월 27일 학습·방학 루틴 적용', () => {
+  it('기존 기록을 보존해 학습 3종을 재배치하고 운동·스터디카페 일정을 추가한다', () => {
+    const sample = createSampleData()
+    const legacy = {
+      ...sample,
+      plans: sample.plans
+        .filter((plan) => ![EXERCISE_PLAN_ID, STUDY_CAFE_PLAN_ID].includes(plan.id))
+        .map((plan) => {
+          if (plan.id === CERTIFICATE_PLAN_ID) return { ...plan, startDate: '2026-07-16' }
+          if (plan.id === MAJOR_PLAN_ID) return { ...plan, startDate: '2026-07-16', endDate: '2026-07-31' }
+          if (plan.id === AUGUST_PLAN_ID) return { ...plan, startDate: '2026-08-01', endDate: '2026-08-31' }
+          return plan
+        }),
+      items: sample.items
+        .filter((item) => ![EXERCISE_PLAN_ID, STUDY_CAFE_PLAN_ID].includes(item.planId ?? ''))
+        .map((item) => item.planId === CERTIFICATE_PLAN_ID && item.plannedSequence
+          ? {
+              ...item,
+              date: nthEligibleDate('2026-07-16', item.plannedSequence, [0]),
+              status: item.plannedSequence === 1 ? 'completed' as const : item.status,
+              actualMinutes: item.plannedSequence === 1 ? 70 : item.actualMinutes,
+              notes: item.plannedSequence === 1 ? '완료 기록 보존' : item.notes,
+            }
+          : item),
+      settings: {
+        ...sample.settings,
+        defaultRestWeekdays: [],
+        appliedMigrations: sample.settings.appliedMigrations.filter((id) => id !== SUMMER_ROUTINE_MIGRATION_ID),
+      },
+    }
+
+    const first = ensureSummerRoutine(legacy)
+    expect(first.changed).toBe(true)
+    expect(first.data.settings.defaultRestWeekdays).toContain(0)
+    expect(first.data.plans).toHaveLength(5)
+    expect(first.data.plans.filter((plan) => [CERTIFICATE_PLAN_ID, MAJOR_PLAN_ID, AUGUST_PLAN_ID].includes(plan.id)).every((plan) => plan.startDate === '2026-07-27')).toBe(true)
+    expect(first.data.plans.find((plan) => plan.id === MAJOR_PLAN_ID)?.endDate).toBe('2026-08-11')
+    expect(first.data.plans.find((plan) => plan.id === AUGUST_PLAN_ID)?.endDate).toBe('2026-08-25')
+
+    const certificateItems = first.data.items.filter((item) => item.planId === CERTIFICATE_PLAN_ID).sort((a, b) => (a.plannedSequence ?? 0) - (b.plannedSequence ?? 0))
+    expect(certificateItems[0]).toMatchObject({ date: '2026-07-27', status: 'completed', actualMinutes: 70, notes: '완료 기록 보존' })
+    expect(certificateItems.at(-1)).toMatchObject({ date: '2026-08-22', plannedSequence: 24 })
+
+    const exerciseItems = first.data.items.filter((item) => item.planId === EXERCISE_PLAN_ID)
+    expect(exerciseItems).toHaveLength(40)
+    expect(exerciseItems[0]).toMatchObject({ date: '2026-07-16', startTime: '16:50', endTime: '17:50', estimatedMinutes: 60 })
+    expect(exerciseItems.at(-1)?.date).toBe('2026-08-31')
+
+    const cafeItems = first.data.items.filter((item) => item.planId === STUDY_CAFE_PLAN_ID)
+    expect(cafeItems).toHaveLength(41)
+    expect(cafeItems.find((item) => item.date === '2026-07-15')).toMatchObject({ status: 'completed', actualMinutes: 60 })
+    expect(cafeItems.find((item) => item.date === '2026-07-25')).toMatchObject({ startTime: '18:00', endTime: '02:00', estimatedMinutes: 480 })
+    expect(cafeItems.find((item) => item.date === '2026-07-27')).toMatchObject({ startTime: '18:00', endTime: '02:00', estimatedMinutes: 480 })
+    expect(cafeItems.find((item) => item.date === '2026-08-31')).toMatchObject({ startTime: '18:00', endTime: '02:00', estimatedMinutes: 480 })
+    expect(first.data.items.filter((item) => item.planId && [CERTIFICATE_PLAN_ID, MAJOR_PLAN_ID, AUGUST_PLAN_ID, EXERCISE_PLAN_ID, STUDY_CAFE_PLAN_ID].includes(item.planId)).some((item) => new Date(`${item.date}T12:00:00`).getDay() === 0)).toBe(false)
+
+    const second = ensureSummerRoutine(first.data)
+    expect(second.changed).toBe(false)
+    expect(second.data).toBe(first.data)
+  })
+
+  it('새 빈 플래너에는 요청 계획을 강제로 다시 만들지 않는다', () => {
+    const empty = createEmptyData()
+    expect(empty.settings.appliedMigrations).toContain(SUMMER_ROUTINE_MIGRATION_ID)
+    expect(ensureSummerRoutine(empty)).toEqual({ data: empty, changed: false })
   })
 })

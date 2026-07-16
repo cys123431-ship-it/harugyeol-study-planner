@@ -12,11 +12,12 @@ test.beforeEach(async ({ page }) => {
 test('예시 계획으로 시작해 오늘 일정과 주간 화면을 확인한다', async ({ page }) => {
   await page.getByRole('button', { name: /예시 계획으로 시작/ }).click()
   await expect(page.getByRole('heading', { name: /오늘의 흐름을 가볍게 시작해요/ })).toBeVisible()
-  await expect(page.getByText('아직 정해진 계획이 없어요')).toBeVisible()
+  await expect(page.getByText('탄방역 지하보도 운동').first()).toBeVisible()
+  await expect(page.getByText('스터디카페 적응 · 1시간 30분').first()).toBeVisible()
   const weekButton = page.getByRole('button', { name: '주간' }).first()
   await weekButton.click()
   await expect(page.getByRole('heading', { name: /7월 13일/ })).toBeVisible()
-  await expect(page.getByText('정보처리기사 실기 · Day 1').first()).toBeVisible()
+  await expect(page.getByText('탄방역 지하보도 운동').first()).toBeVisible()
 })
 
 test('일정을 추가하고 완료 상태를 되돌릴 수 있다', async ({ page }) => {
@@ -34,7 +35,7 @@ test('일정을 추가하고 완료 상태를 되돌릴 수 있다', async ({ pa
 test('반복 일정의 현재 회차와 이후 일정을 한 번에 수정한다', async ({ page }) => {
   await page.getByRole('button', { name: /예시 계획으로 시작/ }).click()
   await page.getByRole('button', { name: '월간' }).first().click()
-  await page.getByRole('button', { name: /7월 16일 목요일, 일정/ }).click()
+  await page.getByRole('button', { name: /7월 27일 월요일, 일정/ }).click()
   await page.locator('.date-detail').getByRole('button', { name: /정보처리기사 실기 · Day 1 자격증/ }).click({ force: true })
   await page.getByLabel('수정 범위').selectOption('future')
   await page.getByLabel('시작 시각').fill('09:00')

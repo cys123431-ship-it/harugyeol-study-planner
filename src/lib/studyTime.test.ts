@@ -13,7 +13,8 @@ describe('공부 시간 계산', () => {
   it('시작과 종료 시각의 차이를 분으로 계산한다', () => {
     expect(timeRangeMinutes('09:10', '11:00')).toBe(110)
     expect(timeRangeMinutes('09:00', '09:00')).toBeNull()
-    expect(timeRangeMinutes('10:00', '09:00')).toBeNull()
+    expect(timeRangeMinutes('18:00', '02:00')).toBe(480)
+    expect(timeRangeMinutes('18:30', '00:00')).toBe(330)
   })
 
   it('입력한 시간 범위를 예상 시간보다 우선한다', () => {

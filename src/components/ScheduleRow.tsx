@@ -73,7 +73,7 @@ export function ScheduleRow({ item, compact = false }: { item: ScheduleItem; com
         <label className="field"><span>공부 시간 {calculatedMinutes !== null && <small>자동</small>}</span><input type="number" min={0} step={5} value={editMinutes} onChange={(event) => setEditMinutes(Number(event.target.value))} /></label>
         {hasSeries && <label className="field"><span>수정 범위</span><select value={editScope} onChange={(event) => setEditScope(event.target.value as OccurrenceEditScope)}><option value="one">이 일정만</option><option value="future">이 일정과 이후 일정</option><option value="all">전체 반복 일정</option></select></label>}
       </div>
-      {invalidTimeRange && <p className="time-range-error">종료 시각은 시작 시각보다 늦어야 합니다.</p>}
+      {invalidTimeRange && <p className="time-range-error">시작 시각과 종료 시각은 서로 달라야 합니다.</p>}
       {hasSeries && <p className="edit-scope-note">완료한 일정은 범위 수정에서 보호됩니다.</p>}
       <label className="field full"><span>메모</span><textarea value={item.notes} onChange={(event) => updateItem(item.id, { notes: event.target.value })} placeholder="학습 범위, 페이지, 링크를 기록하세요." rows={2} /></label>
       <div className="schedule-actions">

@@ -31,14 +31,14 @@ describe('예시 계획 생성', () => {
   const majorPlan = sample.plans.find((plan) => plan.id === 'plan-major-july')!
   const augustPlan = sample.plans.find((plan) => plan.id === 'plan-august-four-subjects')!
 
-  it('정보처리기사 일정을 7월 16일부터 시작해 Day 24까지 정확히 만든다', () => {
+  it('정보처리기사 일정을 7월 27일부터 시작해 Day 24까지 정확히 만든다', () => {
     const items = generateCountSchedule(certificatePlan, defaultSettings)
     expect(items).toHaveLength(24)
-    expect(items[0]).toMatchObject({ date: '2026-07-16', plannedSequence: 1, title: '정보처리기사 실기 · Day 1' })
-    expect(items.at(-1)).toMatchObject({ date: '2026-08-12', plannedSequence: 24, title: '정보처리기사 실기 · Day 24' })
+    expect(items[0]).toMatchObject({ date: '2026-07-27', plannedSequence: 1, title: '정보처리기사 실기 · Day 1' })
+    expect(items.at(-1)).toMatchObject({ date: '2026-08-22', plannedSequence: 24, title: '정보처리기사 실기 · Day 24' })
   })
 
-  it.each(['2026-07-19', '2026-07-26', '2026-08-02', '2026-08-09'])('%s 일요일에는 자동 학습을 만들지 않는다', (date) => {
+  it.each(['2026-08-02', '2026-08-09', '2026-08-16'])('%s 일요일에는 자동 학습을 만들지 않는다', (date) => {
     const items = generateCountSchedule(certificatePlan, defaultSettings)
     expect(items.some((item) => item.date === date)).toBe(false)
   })
@@ -47,33 +47,33 @@ describe('예시 계획 생성', () => {
     const stages = sample.stages.filter((stage) => stage.planId === majorPlan.id)
     const items = generateCumulativeSchedule(majorPlan, stages, defaultSettings)
     const subjects = (date: string) => items.filter((item) => item.date === date).map((item) => item.title)
-    expect(subjects('2026-07-16')).toEqual(['C언어'])
-    expect(subjects('2026-07-18')).toEqual(['C언어'])
-    expect(subjects('2026-07-19')).toEqual([])
-    expect(subjects('2026-07-20')).toEqual(['C언어', '컴퓨터구조'])
-    expect(subjects('2026-07-23')).toEqual(['C언어', '컴퓨터구조', '자료구조'])
-    expect(subjects('2026-07-27')).toEqual(['C언어', '컴퓨터구조', '자료구조', '네트워크'])
+    expect(subjects('2026-07-27')).toEqual(['C언어'])
+    expect(subjects('2026-07-29')).toEqual(['C언어'])
+    expect(subjects('2026-08-02')).toEqual([])
+    expect(subjects('2026-07-30')).toEqual(['C언어', '컴퓨터구조'])
+    expect(subjects('2026-08-03')).toEqual(['C언어', '컴퓨터구조', '자료구조'])
+    expect(subjects('2026-08-06')).toEqual(['C언어', '컴퓨터구조', '자료구조', '네트워크'])
   })
 
   it('8월 미시 계획은 26학습일에 네 과목씩 총 104개 일정을 만든다', () => {
     const items = sample.items.filter((item) => item.planId === augustPlan.id)
     expect(items).toHaveLength(104)
     expect(new Set(items.map((item) => item.date)).size).toBe(26)
-    expect(items.filter((item) => item.date === '2026-08-01')).toHaveLength(4)
-    expect(items.filter((item) => item.date === '2026-08-31')).toHaveLength(4)
-    expect(items.filter((item) => item.date === '2026-08-01').reduce((sum, item) => sum + item.estimatedMinutes, 0)).toBe(145)
+    expect(items.filter((item) => item.date === '2026-07-27')).toHaveLength(4)
+    expect(items.filter((item) => item.date === '2026-08-25')).toHaveLength(4)
+    expect(items.filter((item) => item.date === '2026-07-27').reduce((sum, item) => sum + item.estimatedMinutes, 0)).toBe(145)
   })
 
-  it.each(['2026-08-02', '2026-08-09', '2026-08-16', '2026-08-23', '2026-08-30'])('%s에는 8월 미시 학습 일정을 만들지 않는다', (date) => {
+  it.each(['2026-08-02', '2026-08-09', '2026-08-16', '2026-08-23'])('%s에는 8월 미시 학습 일정을 만들지 않는다', (date) => {
     expect(sample.items.some((item) => item.planId === augustPlan.id && item.date === date)).toBe(false)
   })
 
   it('박태순 네트워크 Lesson 69~71의 실제 목차를 정확한 날짜에 반영한다', () => {
     const networkNotes = (date: string) => sample.items.find((item) => item.planId === augustPlan.id && item.date === date && item.stageId === 'stage-august-network')?.notes
-    expect(networkNotes('2026-08-25')).toContain('L69 웹 서비스·스크립트')
-    expect(networkNotes('2026-08-27')).toContain('L70 인터넷 보안')
-    expect(networkNotes('2026-08-29')).toContain('L71 보안 기술')
-    expect(networkNotes('2026-08-31')).toContain('L58~71 전체 목차 복원')
+    expect(networkNotes('2026-08-19')).toContain('L69 웹 서비스·스크립트')
+    expect(networkNotes('2026-08-21')).toContain('L70 인터넷 보안')
+    expect(networkNotes('2026-08-24')).toContain('L71 보안 기술')
+    expect(networkNotes('2026-08-25')).toContain('L58~71 전체 목차 복원')
   })
 
   it('모든 8월 일정에 과목별 결과물을 메모로 남긴다', () => {
