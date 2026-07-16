@@ -1,6 +1,7 @@
 import type { AppSettings, Category, Plan, PlannerData, PlanStage, ScheduleItem } from '../types'
 import { eligibleDatesInRange, fromDateKey, generateCumulativeSchedule, generateCountSchedule } from '../lib/dates'
 import { createAugustCurriculumItems } from './augustCurriculum'
+import { createEnglishGrammarTemplate, ENGLISH_GRAMMAR_CATEGORY, ENGLISH_GRAMMAR_MIGRATION_ID } from './englishGrammarPlan'
 
 export const AUGUST_PLAN_ID = 'plan-august-four-subjects'
 export const AUGUST_CURRICULUM_MIGRATION_ID = '2026-august-four-subjects-v1'
@@ -31,6 +32,7 @@ const categories: Category[] = [
   { id: 'cat-cert', name: '자격증', type: 'study', color: '#75a99f', order: 0 },
   { id: 'cat-major', name: '전공', type: 'study', color: '#8096c7', order: 1 },
   { id: 'cat-life', name: '생활', type: 'event', color: '#dc9a7c', order: 2 },
+  ENGLISH_GRAMMAR_CATEGORY,
 ]
 
 function basePlan(overrides: Partial<Plan> & Pick<Plan, 'id' | 'title' | 'categoryId' | 'planType' | 'startDate' | 'color'>): Plan {
@@ -203,6 +205,7 @@ export function createSampleData(): PlannerData {
   const augustPlan = augustTemplate.plan
   const exerciseTemplate = createExerciseTemplate('cat-life')
   const studyCafeTemplate = createStudyCafeTemplate('cat-life')
+  const englishGrammarTemplate = createEnglishGrammarTemplate()
   const cumulativeStages: PlanStage[] = [
     { id: 'stage-c', planId: cumulativePlan.id, order: 0, title: 'C언어', unlockAfterEligibleDays: 0, keepPreviousStages: true, color: '#8096c7', defaultDuration: 35 },
     { id: 'stage-architecture', planId: cumulativePlan.id, order: 1, title: '컴퓨터구조', unlockAfterEligibleDays: 3, keepPreviousStages: true, color: '#9a8cc4', defaultDuration: 35 },
@@ -211,19 +214,20 @@ export function createSampleData(): PlannerData {
   ]
   const augustStages = augustTemplate.stages
   const stages = [...cumulativeStages, ...augustStages]
-  const plans = [certificatePlan, cumulativePlan, augustPlan, exerciseTemplate.plan, studyCafeTemplate.plan]
+  const plans = [certificatePlan, cumulativePlan, augustPlan, exerciseTemplate.plan, studyCafeTemplate.plan, englishGrammarTemplate.plan]
   const items = [
     ...generateCountSchedule(certificatePlan, defaultSettings),
     ...generateCumulativeSchedule(cumulativePlan, cumulativeStages, defaultSettings),
     ...augustTemplate.items,
     ...exerciseTemplate.items,
     ...studyCafeTemplate.items,
+    ...englishGrammarTemplate.items,
   ]
-  return { plans, stages, items, categories, reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID, CERTIFICATE_START_MIGRATION_ID, SUMMER_ROUTINE_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
+  return { plans, stages, items, categories, reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID, CERTIFICATE_START_MIGRATION_ID, SUMMER_ROUTINE_MIGRATION_ID, ENGLISH_GRAMMAR_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
 }
 
 export function createEmptyData(): PlannerData {
-  return { plans: [], stages: [], items: [], categories: [...categories], reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID, CERTIFICATE_START_MIGRATION_ID, SUMMER_ROUTINE_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
+  return { plans: [], stages: [], items: [], categories: [...categories], reflections: [], settings: { ...defaultSettings, appliedMigrations: [AUGUST_CURRICULUM_MIGRATION_ID, CERTIFICATE_START_MIGRATION_ID, SUMMER_ROUTINE_MIGRATION_ID, ENGLISH_GRAMMAR_MIGRATION_ID], lastModifiedAt: new Date().toISOString() } }
 }
 
 export function ensureAugustCurriculum(data: PlannerData): { data: PlannerData; added: boolean } {
@@ -351,7 +355,8 @@ export function ensureSummerRoutine(data: PlannerData): { data: PlannerData; cha
   const now = new Date().toISOString()
   const template = createSampleData()
   const targetPlanIds = new Set([CERTIFICATE_PLAN_ID, MAJOR_PLAN_ID, AUGUST_PLAN_ID, EXERCISE_PLAN_ID, STUDY_CAFE_PLAN_ID])
-  const templatePlans = new Map(template.plans.map((plan) => [plan.id, plan]))
+  const targetTemplatePlans = template.plans.filter((plan) => targetPlanIds.has(plan.id))
+  const templatePlans = new Map(targetTemplatePlans.map((plan) => [plan.id, plan]))
   const existingPlanIds = new Set(data.plans.map((plan) => plan.id))
   const plans = [
     ...data.plans.map((plan) => {
@@ -365,13 +370,13 @@ export function ensureSummerRoutine(data: PlannerData): { data: PlannerData; cha
         updatedAt: now,
       }
     }),
-    ...template.plans.filter((plan) => !existingPlanIds.has(plan.id)),
+    ...targetTemplatePlans.filter((plan) => !existingPlanIds.has(plan.id)),
   ]
   const existingStageIds = new Set(data.stages.map((stage) => stage.id))
   const stages = [...data.stages, ...template.stages.filter((stage) => !existingStageIds.has(stage.id))]
   const items = [
     ...data.items.filter((item) => !item.planId || !targetPlanIds.has(item.planId)),
-    ...template.plans.flatMap((plan) => mergePlanItems(
+    ...targetTemplatePlans.flatMap((plan) => mergePlanItems(
       data.items.filter((item) => item.planId === plan.id),
       template.items.filter((item) => item.planId === plan.id),
       plan.id,

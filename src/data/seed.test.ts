@@ -129,7 +129,7 @@ describe('7월 27일 학습·방학 루틴 적용', () => {
     const first = ensureSummerRoutine(legacy)
     expect(first.changed).toBe(true)
     expect(first.data.settings.defaultRestWeekdays).toContain(0)
-    expect(first.data.plans).toHaveLength(5)
+    expect(first.data.plans).toHaveLength(6)
     expect(first.data.plans.filter((plan) => [CERTIFICATE_PLAN_ID, MAJOR_PLAN_ID, AUGUST_PLAN_ID].includes(plan.id)).every((plan) => plan.startDate === '2026-07-27')).toBe(true)
     expect(first.data.plans.find((plan) => plan.id === MAJOR_PLAN_ID)?.endDate).toBe('2026-08-11')
     expect(first.data.plans.find((plan) => plan.id === AUGUST_PLAN_ID)?.endDate).toBe('2026-08-25')
