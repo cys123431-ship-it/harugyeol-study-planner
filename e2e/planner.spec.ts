@@ -75,3 +75,24 @@ test('모바일 하단 메뉴와 더보기 메뉴가 작동한다', async ({ pag
   await page.getByRole('button', { name: '설정' }).last().click()
   await expect(page.getByRole('heading', { name: /내 리듬에 맞게/ })).toBeVisible()
 })
+
+test('모바일 월간 화면에서도 하단 메뉴 다섯 개가 화면 안에 보인다', async ({ page, isMobile }) => {
+  test.skip(!isMobile, '모바일 프로젝트 전용')
+  await page.getByRole('button', { name: /예시 계획으로 시작/ }).click()
+  await page.getByRole('button', { name: '월간' }).click()
+  await expect(page.getByRole('button', { name: '더보기' })).toBeVisible()
+
+  const layout = await page.evaluate(() => {
+    const moreButton = document.querySelector<HTMLButtonElement>('.mobile-nav button:last-child')
+    const calendar = document.querySelector<HTMLElement>('.calendar-grid')
+    return {
+      viewportWidth: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      moreButtonRight: moreButton?.getBoundingClientRect().right ?? Infinity,
+      calendarRight: calendar?.getBoundingClientRect().right ?? Infinity,
+    }
+  })
+  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1)
+  expect(layout.moreButtonRight).toBeLessThanOrEqual(layout.viewportWidth + 1)
+  expect(layout.calendarRight).toBeLessThanOrEqual(layout.viewportWidth + 1)
+})

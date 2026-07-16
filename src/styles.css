@@ -514,8 +514,9 @@ button, input, select, textarea { border-radius: 0; }
   .week-summary-line > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .lined-input { grid-template-columns: 1fr; }
   .month-tools { width: 100%; justify-content: space-between; }
-  .month-layout { display: block; border: 0; background: transparent; }
-  .calendar-grid { border: 1px solid var(--line); background: var(--paper); }
+  .month-page { min-width: 0; overflow-x: clip; }
+  .month-layout { display: block; width: 100%; min-width: 0; border: 0; background: transparent; }
+  .calendar-grid { width: 100%; min-width: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--line); background: var(--paper); }
   .calendar-day { min-height: 75px; padding: 5px; }
   .calendar-items span { font-size: 0; }
   .calendar-items { flex-direction: row; flex-wrap: wrap; margin-top: 7px; gap: 4px; }
@@ -566,8 +567,8 @@ button, input, select, textarea { border-radius: 0; }
   .confirmation dl { grid-template-columns: 1fr; }
   .confirmation dl div { border-right: 0; border-bottom: 1px solid var(--line); }
   .confirmation dl div:last-child { border: 0; }
-  .mobile-nav { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 90; inset: auto 0 0; height: 68px; padding-bottom: env(safe-area-inset-bottom); background: rgba(255, 254, 250, .97); border-top: 1px solid var(--line); box-shadow: 0 -5px 20px rgba(47, 61, 53, .06); }
-  .mobile-nav button { border: 0; background: transparent; color: #7c8882; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; font-weight: 650; }
+  .mobile-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; z-index: 90; inset: auto 0 0; width: 100vw; width: 100dvw; max-width: 100vw; max-width: 100dvw; min-width: 0; height: 68px; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); background: rgba(255, 254, 250, .97); border-top: 1px solid var(--line); box-shadow: 0 -5px 20px rgba(47, 61, 53, .06); }
+  .mobile-nav button { min-width: 0; border: 0; background: transparent; color: #7c8882; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; font-weight: 650; }
   .mobile-nav button.active { color: var(--mint-dark); }
   .floating-add { display: grid; place-items: center; position: fixed; z-index: 95; right: 18px; bottom: 82px; width: 51px; height: 51px; border-radius: 50%; border: 0; background: var(--mint-dark); color: white; box-shadow: 0 9px 20px rgba(46, 96, 87, .25); }
   .mobile-more { display: flex; position: fixed; z-index: 89; bottom: 70px; right: 9px; flex-direction: column; width: 155px; padding: 6px; border: 1px solid var(--line); background: var(--paper); border-radius: 11px; box-shadow: 0 10px 30px rgba(43, 58, 50, .15); }
