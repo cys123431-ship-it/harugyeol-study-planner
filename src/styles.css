@@ -497,6 +497,9 @@ button, input, select, textarea { border-radius: 0; }
 
 @media (max-width: 780px) {
   :root { --sidebar: 0px; }
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; overflow-x: clip; }
+  .app-shell, .main-content, .page { width: 100%; max-width: 100%; min-width: 0; }
+  .app-shell, .main-content { overflow-x: hidden; overflow-x: clip; }
   .sidebar { display: none; }
   .main-content { margin: 0; padding-bottom: 74px; }
   .page { padding: 28px 18px 55px; }
@@ -508,16 +511,32 @@ button, input, select, textarea { border-radius: 0; }
   .focus-summary { border: 0; border-bottom: 1px solid var(--line); padding: 25px 21px; }
   .day-progress { flex-direction: row; padding: 21px; }
   .today-notes, .week-bottom, .progress-layout { grid-template-columns: 1fr; }
-  .paper-week { grid-template-columns: repeat(7, 148px); }
+  .paper-week { width: 100%; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+  .paper-week > article { min-width: 0; min-height: 310px; border-bottom: 1px solid #dfe4de; }
+  .paper-week > article:nth-child(3n) { border-right: 0; }
+  .paper-week > article:nth-child(7) { grid-column: 1 / -1; min-height: 185px; border-right: 0; border-bottom: 0; }
+  .paper-week article > header { min-height: 62px; padding: 10px; }
+  .paper-week article > header strong { font-size: 21px; }
+  .paper-week article > header small { right: 6px; top: 8px; }
+  .paper-week .schedule-row.compact { padding: 7px 6px; overflow: hidden; }
+  .paper-week .schedule-row.compact .check-button { width: 15px; height: 15px; margin-right: 5px; }
+  .paper-week .schedule-copy { min-width: 0; overflow: hidden; }
+  .paper-week .schedule-copy strong { font-size: 9px; overflow-wrap: anywhere; }
+  .paper-week .schedule-copy small { font-size: 8px; white-space: normal; }
+  .paper-week article > footer { padding: 8px 6px; justify-content: flex-start; flex-wrap: wrap; line-height: 1.35; }
   .week-summary-line { grid-template-columns: 1fr 1fr; }
   .week-summary-line > div:nth-child(2) { border-right: 0; }
   .week-summary-line > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .lined-input { grid-template-columns: 1fr; }
   .month-tools { width: 100%; justify-content: space-between; }
-  .month-page { min-width: 0; overflow-x: clip; }
-  .month-layout { display: block; width: 100%; min-width: 0; border: 0; background: transparent; }
-  .calendar-grid { width: 100%; min-width: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--line); background: var(--paper); }
-  .calendar-day { min-height: 75px; padding: 5px; }
+  .month-page { width: 100%; max-width: 100%; min-width: 0; overflow-x: hidden; overflow-x: clip; }
+  .month-page .split-header, .month-page .split-header > div { width: 100%; max-width: 100%; min-width: 0; }
+  .month-layout { display: block; width: 100%; max-width: 100%; min-width: 0; overflow: hidden; border: 0; background: transparent; }
+  .calendar-grid { width: 100%; max-width: 100%; min-width: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--line); background: var(--paper); }
+  .calendar-grid > * { min-width: 0; max-width: 100%; }
+  .weekday-label { overflow: hidden; }
+  .calendar-day { width: 100%; max-width: 100%; min-height: 75px; padding: 5px; overflow: hidden; }
+  .day-study-time { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .calendar-items span { font-size: 0; }
   .calendar-items { flex-direction: row; flex-wrap: wrap; margin-top: 7px; gap: 4px; }
   .calendar-items i { width: 6px; height: 6px; }
@@ -567,7 +586,7 @@ button, input, select, textarea { border-radius: 0; }
   .confirmation dl { grid-template-columns: 1fr; }
   .confirmation dl div { border-right: 0; border-bottom: 1px solid var(--line); }
   .confirmation dl div:last-child { border: 0; }
-  .mobile-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; z-index: 90; inset: auto 0 0; width: 100vw; width: 100dvw; max-width: 100vw; max-width: 100dvw; min-width: 0; height: 68px; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); background: rgba(255, 254, 250, .97); border-top: 1px solid var(--line); box-shadow: 0 -5px 20px rgba(47, 61, 53, .06); }
+  .mobile-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; z-index: 90; left: 0; right: 0; bottom: 0; width: auto; max-width: none; min-width: 0; height: 68px; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); background: rgba(255, 254, 250, .97); border-top: 1px solid var(--line); box-shadow: 0 -5px 20px rgba(47, 61, 53, .06); }
   .mobile-nav button { min-width: 0; border: 0; background: transparent; color: #7c8882; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; font-weight: 650; }
   .mobile-nav button.active { color: var(--mint-dark); }
   .floating-add { display: grid; place-items: center; position: fixed; z-index: 95; right: 18px; bottom: 82px; width: 51px; height: 51px; border-radius: 50%; border: 0; background: var(--mint-dark); color: white; box-shadow: 0 9px 20px rgba(46, 96, 87, .25); }
@@ -579,6 +598,7 @@ button, input, select, textarea { border-radius: 0; }
 
 @media (max-width: 480px) {
   .page { padding-left: 14px; padding-right: 14px; }
+  .week-page, .month-page { padding-left: 9px; padding-right: 9px; }
   .focus-summary h2 { font-size: 21px; }
   .day-progress { align-items: center; }
   .progress-ring { width: 87px; height: 87px; }
@@ -596,7 +616,10 @@ button, input, select, textarea { border-radius: 0; }
   .month-tools > label, .month-tools .date-nav { width: 100%; }
   .month-tools .date-nav { justify-content: space-between; }
   .month-tools .date-nav button { flex: 1; }
-  .calendar-day { min-height: 65px; }
+  .calendar-day { min-height: 62px; padding: 4px 3px; }
+  .weekday-label { height: 31px; font-size: 9px; }
+  .day-number { width: 21px; height: 21px; font-size: 12px; }
+  .day-study-time { font-size: 7px; }
   .settings-group > header, .settings-rows > label { padding-left: 17px; padding-right: 17px; }
   .dialog { max-height: calc(100vh - 14px); border-radius: 12px; }
   .modal-backdrop { padding: 7px; }
