@@ -6,7 +6,7 @@ import { actualStudyMinutes, formatStudyMinutes, plannedStudyMinutes } from '../
 import { ScheduleRow } from '../components/ScheduleRow'
 import { usePlanner } from '../store/PlannerContext'
 
-export function TodayView({ onOpenTimer, onAddItem, onAddPlan }: { onOpenTimer: () => void; onAddItem: () => void; onAddPlan: () => void }) {
+export function TodayView({ onOpenTimer, onAddItem, onAddPlan }: { onOpenTimer: (itemId?: string) => void; onAddItem: () => void; onAddPlan: () => void }) {
   const { data, saveReflection } = usePlanner()
   const today = todayKey()
   const [mode, setMode] = useState(data?.settings.defaultView ?? 'checklist')
@@ -38,8 +38,8 @@ export function TodayView({ onOpenTimer, onAddItem, onAddPlan }: { onOpenTimer: 
       <div className="focus-summary">
         <div className="section-label"><span>오늘의 핵심 목표</span><small>{completed}/{items.length} 완료</small></div>
         <h2>{studyItems.find((item) => item.status !== 'completed')?.title ?? (items.length ? '오늘의 계획을 모두 마쳤어요' : '아직 정해진 계획이 없어요')}</h2>
-        <div className="summary-meta"><span><Clock3 size={16} /> 남은 예상 {formatStudyMinutes(estimated)}</span><span><TimerReset size={16} /> 완료 공부 {formatStudyMinutes(actual)}</span>{nextDeadline && <span className="deadline-summary"><CalendarPlus size={16} /> {formatDday(getDday(nextDeadline, today))} · {nextDeadline.title}</span>}</div>
-        {!rest && <button className="primary-button" onClick={onOpenTimer}><AlarmClock size={18} /> 집중 타이머 시작</button>}
+        <div className="summary-meta"><span><Clock3 size={16} /> 남은 예상 {formatStudyMinutes(estimated)}</span><span><TimerReset size={16} /> 기록 공부 {formatStudyMinutes(actual)}</span>{nextDeadline && <span className="deadline-summary"><CalendarPlus size={16} /> {formatDday(getDday(nextDeadline, today))} · {nextDeadline.title}</span>}</div>
+        {!rest && <button className="primary-button" onClick={() => onOpenTimer()}><AlarmClock size={18} /> 집중 타이머 시작</button>}
       </div>
       <div className="day-progress">
         <div className="progress-ring" style={{ '--progress': `${percentage * 3.6}deg` } as React.CSSProperties}><span><strong>{percentage}%</strong><small>오늘 완료</small></span></div>
@@ -51,10 +51,10 @@ export function TodayView({ onOpenTimer, onAddItem, onAddPlan }: { onOpenTimer: 
       <div className="section-heading"><div><span className="eyebrow"><ListChecks size={15} /> 오늘 할 일</span><h2>지금부터 하나씩</h2></div><div className="view-toggle"><button className={mode === 'checklist' ? 'active' : ''} onClick={() => setMode('checklist')}>목록</button><button className={mode === 'timeline' ? 'active' : ''} onClick={() => setMode('timeline')}>시간순</button></div></div>
       {!items.length ? <div className="empty-state"><CalendarPlus /><h3>아직 오늘의 계획이 없습니다.</h3><p>가볍게 일정 하나를 더하거나 예시 계획을 불러올 수 있어요.</p><div><button className="primary-button" onClick={onAddItem}>일정 추가</button><button className="secondary-button" onClick={onAddPlan}>계획 추가</button></div></div>
         : mode === 'checklist' ? <div className="schedule-list">
-          {studyItems.length > 0 && <div className="schedule-group"><div className="group-title"><span>학습</span><small>{studyItems.filter((item) => item.status === 'completed').length}/{studyItems.length}</small></div>{studyItems.map((item) => <ScheduleRow key={item.id} item={item} />)}</div>}
-          {otherItems.length > 0 && <div className="schedule-group"><div className="group-title"><span>기타 일정</span><small>{otherItems.length}</small></div>{otherItems.map((item) => <ScheduleRow key={item.id} item={item} />)}</div>}
+          {studyItems.length > 0 && <div className="schedule-group"><div className="group-title"><span>학습</span><small>{studyItems.filter((item) => item.status === 'completed').length}/{studyItems.length}</small></div>{studyItems.map((item) => <ScheduleRow key={item.id} item={item} onOpenTimer={onOpenTimer} />)}</div>}
+          {otherItems.length > 0 && <div className="schedule-group"><div className="group-title"><span>기타 일정</span><small>{otherItems.length}</small></div>{otherItems.map((item) => <ScheduleRow key={item.id} item={item} onOpenTimer={onOpenTimer} />)}</div>}
         </div> : <div className="timeline-list">
-          {items.map((item) => <div className="timeline-entry" key={item.id}><time>{item.startTime ?? '미정'}</time><span className="timeline-dot" /><ScheduleRow item={item} compact /></div>)}
+          {items.map((item) => <div className="timeline-entry" key={item.id}><time>{item.startTime ?? '미정'}</time><span className="timeline-dot" /><ScheduleRow item={item} compact onOpenTimer={onOpenTimer} /></div>)}
         </div>}
       {items.length > 0 && <button className="add-inline" onClick={onAddItem}>+ 일정 하나 더하기</button>}
     </section>

@@ -20,8 +20,9 @@ export function plannedStudyMinutes(item: ScheduleItem): number {
 }
 
 export function actualStudyMinutes(item: ScheduleItem): number {
+  if (item.actualMinutes !== undefined) return item.actualMinutes
   if (item.status !== 'completed') return 0
-  return item.actualMinutes ?? timeRangeMinutes(item.startTime, item.endTime) ?? item.estimatedMinutes
+  return timeRangeMinutes(item.startTime, item.endTime) ?? item.estimatedMinutes
 }
 
 export function formatStudyMinutes(minutes: number): string {

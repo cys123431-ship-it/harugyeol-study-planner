@@ -9,6 +9,7 @@ import { chooseNewestPlannerData, readCloudSnapshot, writeCloudSnapshot, type Sy
 import { fromDateKey, generateScheduleForPlan, protectCompletedAndRegenerate, toDateKey } from '../lib/dates'
 import { archiveExpiredDeadlinePlans } from '../lib/deadlines'
 import { createId } from '../lib/ids'
+import { timerActualMinutes, timerElapsedSeconds, timerTargetSeconds } from '../lib/itemTimer'
 import { timeRangeMinutes } from '../lib/studyTime'
 import type {
   AppSettings,
@@ -135,6 +136,38 @@ export function PlannerProvider({ children, cloudUser = null }: { children: Reac
       if (cloudTimer) window.clearTimeout(cloudTimer)
     }
   }, [cloudUser, data])
+
+  useEffect(() => {
+    const resolveFinishedCountdowns = () => {
+      const timestamp = Date.now()
+      const finishedAt = new Date(timestamp).toISOString()
+      setData((current) => {
+        if (!current) return current
+        let changed = false
+        const items = current.items.map((item) => {
+          if (item.timerMode !== 'countdown' || item.timerStatus !== 'running') return item
+          const targetSeconds = timerTargetSeconds(item)
+          if (timerElapsedSeconds(item, timestamp) < targetSeconds) return item
+          changed = true
+          return {
+            ...item,
+            timerStatus: 'success' as const,
+            timerStartedAt: undefined,
+            timerElapsedSeconds: targetSeconds,
+            timerSucceededAt: finishedAt,
+            actualMinutes: timerActualMinutes(item, targetSeconds),
+            actualEndedAt: finishedAt,
+            status: item.status === 'scheduled' ? 'in-progress' as const : item.status,
+            updatedAt: finishedAt,
+          }
+        })
+        return changed ? touchData({ ...current, items }) : current
+      })
+    }
+    resolveFinishedCountdowns()
+    const interval = window.setInterval(resolveFinishedCountdowns, 1000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   const initialize = useCallback((mode: 'sample' | 'empty') => {
     setData(mode === 'sample' ? createSampleData() : createEmptyData())
@@ -280,13 +313,21 @@ export function PlannerProvider({ children, cloudUser = null }: { children: Reac
       const actualSequence = completing && target.planId
         ? current.items.filter((item) => item.planId === target.planId && item.status === 'completed').length + 1
         : undefined
+      const now = new Date()
+      const measuredSeconds = timerElapsedSeconds(target, now.getTime())
+      const measuredMinutes = measuredSeconds > 0 ? timerActualMinutes(target, measuredSeconds) : undefined
+      const hasTimerRecord = Boolean(target.timerElapsedSeconds || target.actualStartedAt)
       return touchData({ ...current, items: current.items.map((item) => item.id === id ? {
         ...item,
-        status: completing ? 'completed' : 'scheduled',
-        completedAt: completing ? new Date().toISOString() : undefined,
-        actualMinutes: completing ? (actualMinutes ?? item.actualMinutes ?? timeRangeMinutes(item.startTime, item.endTime) ?? item.estimatedMinutes) : undefined,
+        status: completing ? 'completed' : hasTimerRecord ? 'in-progress' : 'scheduled',
+        completedAt: completing ? now.toISOString() : undefined,
+        actualMinutes: completing ? (actualMinutes ?? measuredMinutes ?? item.actualMinutes ?? timeRangeMinutes(item.startTime, item.endTime) ?? item.estimatedMinutes) : hasTimerRecord ? item.actualMinutes : undefined,
+        timerStatus: item.timerStatus === 'running' ? 'paused' : item.timerStatus,
+        timerStartedAt: item.timerStatus === 'running' ? undefined : item.timerStartedAt,
+        timerElapsedSeconds: item.timerStatus === 'running' ? measuredSeconds : item.timerElapsedSeconds,
+        actualEndedAt: item.timerStatus === 'running' ? now.toISOString() : item.actualEndedAt,
         actualSequence,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now.toISOString(),
       } : item) })
     })
     setToast('일정 상태를 변경했습니다. 다시 누르면 되돌릴 수 있습니다.')

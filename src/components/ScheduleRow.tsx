@@ -1,11 +1,18 @@
-import { Check, ChevronDown, Clock3, RotateCcw } from 'lucide-react'
+import { Check, ChevronDown, Clock3, RotateCcw, Timer } from 'lucide-react'
 import { useState } from 'react'
 import { nextEligibleDate, todayKey } from '../lib/dates'
 import { formatStudyMinutes, plannedStudyMinutes, timeRangeMinutes } from '../lib/studyTime'
 import { usePlanner, type OccurrenceEditScope } from '../store/PlannerContext'
 import type { ScheduleItem } from '../types'
 
-export function ScheduleRow({ item, compact = false }: { item: ScheduleItem; compact?: boolean }) {
+function clockLabel(iso?: string): string {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+export function ScheduleRow({ item, compact = false, onOpenTimer }: { item: ScheduleItem; compact?: boolean; onOpenTimer?: (itemId: string) => void }) {
   const { data, toggleComplete, updateItem, editScheduleOccurrence, carryItem } = usePlanner()
   const [expanded, setExpanded] = useState(false)
   const [editTitle, setEditTitle] = useState(item.title)
@@ -63,8 +70,9 @@ export function ScheduleRow({ item, compact = false }: { item: ScheduleItem; com
       {!compact && <span className={`status-tag status-${item.status}`}>{statusLabel[item.status]}</span>}
       <ChevronDown size={17} className={expanded ? 'rotated' : ''} />
     </button>
+    {onOpenTimer && !completed && <button className={`schedule-timer-launch timer-${item.timerStatus ?? 'idle'}`} onClick={() => onOpenTimer(item.id)}><Timer size={14} />{item.timerStatus === 'running' ? '타이머 진행 중' : item.timerStatus === 'paused' ? '타이머 이어서' : item.timerStatus === 'success' ? '목표 달성' : '타이머 시작'}</button>}
     {expanded && <div className="schedule-detail">
-      <div className="detail-stats"><span><Clock3 size={15} /> 계획 {item.plannedSequence ? `${item.plannedSequence}회차 · ` : ''}{formatStudyMinutes(plannedStudyMinutes(item))}</span>{item.actualSequence && <span>실제 완료 {item.actualSequence}회차</span>}{item.actualMinutes && <span>실제 {formatStudyMinutes(item.actualMinutes)}</span>}</div>
+      <div className="detail-stats"><span><Clock3 size={15} /> 계획 {item.plannedSequence ? `${item.plannedSequence}회차 · ` : ''}{formatStudyMinutes(plannedStudyMinutes(item))}</span>{item.actualSequence && <span>실제 완료 {item.actualSequence}회차</span>}{item.actualMinutes !== undefined && <span>실제 {formatStudyMinutes(item.actualMinutes)}</span>}{item.actualStartedAt && <span>측정 {clockLabel(item.actualStartedAt)}–{clockLabel(item.actualEndedAt) || '진행 중'}</span>}</div>
       <div className="schedule-edit-grid">
         <label className="field full"><span>일정 이름</span><input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} /></label>
         <label className="field"><span>날짜</span><input type="date" value={moveDate} onChange={(event) => setMoveDate(event.target.value)} /></label>

@@ -33,7 +33,7 @@ export function MonthView() {
           const dayActual = dayStudyItems.reduce((sum, item) => sum + actualStudyMinutes(item), 0)
           const rest = isRestDay(day, data?.settings.defaultRestWeekdays ?? [0])
           const selected = date === selectedDate
-          return <button key={date} className={`calendar-day ${!isSameMonth(day, month) ? 'outside' : ''} ${date === todayKey() ? 'today' : ''} ${selected ? 'selected' : ''}`} onClick={() => setSelectedDate(date)} aria-label={`${format(day, 'M월 d일 EEEE', { locale: ko })}, 일정 ${dayItems.length}개, 완료 ${dayActual}분, 계획 ${dayPlanned}분${rest ? ', 휴식일' : ''}`}>
+          return <button key={date} className={`calendar-day ${!isSameMonth(day, month) ? 'outside' : ''} ${date === todayKey() ? 'today' : ''} ${selected ? 'selected' : ''}`} onClick={() => setSelectedDate(date)} aria-label={`${format(day, 'M월 d일 EEEE', { locale: ko })}, 일정 ${dayItems.length}개, 기록 ${dayActual}분, 계획 ${dayPlanned}분${rest ? ', 휴식일' : ''}`}>
             <span className="day-number">{format(day, 'd')}</span>{rest && <small className="rest-chip">휴식</small>}
             {dayPlanned > 0 && <small className="day-study-time">{dayActual}/{dayPlanned}분</small>}
             <div className="calendar-items">{dayItems.slice(0, 2).map((item) => { const plan = data?.plans.find((candidate) => candidate.id === item.planId); const stage = data?.stages.find((candidate) => candidate.id === item.stageId); return <span key={item.id}><i style={{ background: stage?.color ?? plan?.color ?? '#ad9a88' }} />{item.title}</span> })}</div>
@@ -41,7 +41,7 @@ export function MonthView() {
           </button>
         })}
       </section>
-      <aside className="date-detail"><div className="detail-date"><span>{format(fromDateKey(selectedDate), 'EEEE', { locale: ko })}</span><strong>{format(fromDateKey(selectedDate), 'M월 d일', { locale: ko })}</strong><small>{isRestDay(selectedDate, data?.settings.defaultRestWeekdays ?? [0]) ? '휴식일 · ' : ''}{selectedItems.length}개 일정 · 완료 {formatStudyMinutes(selectedActual)} / 계획 {formatStudyMinutes(selectedPlanned)}</small></div><div className="detail-list">{selectedItems.map((item) => <ScheduleRow key={item.id} item={item} compact />)}{!selectedItems.length && <div className="small-empty"><span>비어 있는 날이에요.</span><small>일정 없이 여유롭게 보내도 좋습니다.</small></div>}</div></aside>
+      <aside className="date-detail"><div className="detail-date"><span>{format(fromDateKey(selectedDate), 'EEEE', { locale: ko })}</span><strong>{format(fromDateKey(selectedDate), 'M월 d일', { locale: ko })}</strong><small>{isRestDay(selectedDate, data?.settings.defaultRestWeekdays ?? [0]) ? '휴식일 · ' : ''}{selectedItems.length}개 일정 · 기록 {formatStudyMinutes(selectedActual)} / 계획 {formatStudyMinutes(selectedPlanned)}</small></div><div className="detail-list">{selectedItems.map((item) => <ScheduleRow key={item.id} item={item} compact />)}{!selectedItems.length && <div className="small-empty"><span>비어 있는 날이에요.</span><small>일정 없이 여유롭게 보내도 좋습니다.</small></div>}</div></aside>
     </div>
   </div>
 }

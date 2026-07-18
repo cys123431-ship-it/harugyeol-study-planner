@@ -3,6 +3,8 @@ export type PlanStatus = 'active' | 'upcoming' | 'completed' | 'archived'
 export type ScheduleStatus = 'scheduled' | 'in-progress' | 'completed' | 'missed' | 'skipped' | 'carried' | 'cancelled'
 export type CategoryType = 'study' | 'exam' | 'assignment' | 'habit' | 'event' | 'project' | 'other'
 export type PeriodType = 'daily' | 'weekly' | 'monthly'
+export type TimerMode = 'stopwatch' | 'countdown'
+export type TimerStatus = 'idle' | 'running' | 'paused' | 'success'
 
 export interface RecurrenceRule {
   frequency: 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'custom'
@@ -59,6 +61,15 @@ export interface ScheduleItem {
   isRestDayOverride: boolean
   estimatedMinutes: number
   actualMinutes?: number
+  actualStartedAt?: string
+  actualEndedAt?: string
+  timerMode?: TimerMode
+  timerStatus?: TimerStatus
+  timerStartedAt?: string
+  timerElapsedSeconds?: number
+  timerTargetMinutes?: number
+  timerBaseActualMinutes?: number
+  timerSucceededAt?: string
   completedAt?: string
   notes: string
   priority: 'low' | 'normal' | 'high'

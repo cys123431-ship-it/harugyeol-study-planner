@@ -35,4 +35,8 @@ describe('공부 시간 계산', () => {
     expect(periodDateRange('2026-07-15', 'weekly')).toEqual({ start: '2026-07-13', end: '2026-07-19' })
     expect(periodDateRange('2026-07-15', 'monthly')).toEqual({ start: '2026-07-01', end: '2026-07-31' })
   })
+
+  it('완료 전이라도 타이머로 기록한 실제 공부 시간을 집계한다', () => {
+    expect(actualStudyMinutes(item({ status: 'in-progress', actualMinutes: 37 }))).toBe(37)
+  })
 })

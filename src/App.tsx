@@ -36,6 +36,7 @@ export default function App() {
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
   const [showItemDialog, setShowItemDialog] = useState(false)
   const [showTimer, setShowTimer] = useState(false)
+  const [timerItemId, setTimerItemId] = useState<string | undefined>()
   const [mobileMore, setMobileMore] = useState(false)
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function App() {
       </aside>
 
       <main id="main-content" className="main-content">
-        {view === 'today' && <TodayView onOpenTimer={() => setShowTimer(true)} onAddItem={() => setShowItemDialog(true)} onAddPlan={() => setShowPlanWizard(true)} />}
+        {view === 'today' && <TodayView onOpenTimer={(itemId) => { setTimerItemId(itemId); setShowTimer(true) }} onAddItem={() => setShowItemDialog(true)} onAddPlan={() => setShowPlanWizard(true)} />}
         {view === 'week' && <WeekView />}
         {view === 'month' && <MonthView />}
         {view === 'plans' && <PlansView onAdd={() => { setEditingPlan(null); setShowPlanWizard(true) }} onEdit={openEdit} />}
@@ -87,7 +88,7 @@ export default function App() {
       {needsOnboarding && <Onboarding />}
       {showPlanWizard && <AddPlanWizard plan={editingPlan} onClose={() => { setShowPlanWizard(false); setEditingPlan(null) }} />}
       {showItemDialog && <AddItemDialog onClose={() => setShowItemDialog(false)} />}
-      {showTimer && <FocusTimer onClose={() => setShowTimer(false)} />}
+      {showTimer && <FocusTimer initialItemId={timerItemId} onClose={() => { setShowTimer(false); setTimerItemId(undefined) }} />}
       <Toast />
     </div>
   )

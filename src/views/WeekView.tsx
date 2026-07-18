@@ -34,7 +34,7 @@ export function WeekView() {
 
   return <div className="page week-page">
     <header className="page-header split-header"><div><span className="eyebrow">주간 플래너</span><h1>{format(start, 'M월 d일', { locale: ko })} — {format(end, 'M월 d일', { locale: ko })}</h1><p>한 주의 밀도를 한눈에 보고, 무리한 날은 미리 조정하세요.</p></div><div className="date-nav"><button onClick={() => setAnchor(addWeeks(anchor, -1))} aria-label="이전 주"><ChevronLeft /></button><button onClick={() => setAnchor(fromDateKey(todayKey()))}>이번 주</button><button onClick={() => setAnchor(addWeeks(anchor, 1))} aria-label="다음 주"><ChevronRight /></button></div></header>
-    <section className="week-summary-line"><div><span>주간 완료율</span><strong>{rangeItems.length ? Math.round((completed / rangeItems.length) * 100) : 0}%</strong></div><div><span>계획 공부</span><strong>{formatStudyMinutes(expectedMinutes)}</strong></div><div><span>완료 공부</span><strong>{formatStudyMinutes(actualMinutes)}</strong></div><div><span>학습 항목</span><strong>{rangeItems.length}개</strong></div></section>
+    <section className="week-summary-line"><div><span>주간 완료율</span><strong>{rangeItems.length ? Math.round((completed / rangeItems.length) * 100) : 0}%</strong></div><div><span>계획 공부</span><strong>{formatStudyMinutes(expectedMinutes)}</strong></div><div><span>기록 공부</span><strong>{formatStudyMinutes(actualMinutes)}</strong></div><div><span>학습 항목</span><strong>{rangeItems.length}개</strong></div></section>
     <section className="paper-week" aria-label="주간 일정">
       {days.map((day) => {
         const date = toDateKey(day)
@@ -48,7 +48,7 @@ export function WeekView() {
           <header><span>{format(day, 'EEE', { locale: ko })}</span><strong>{format(day, 'd')}</strong>{isToday && <small>오늘</small>}</header>
           {rest && <div className="rest-label">휴식</div>}
           <div className="week-items">{dayItems.slice(0, 6).map((item) => <ScheduleRow key={item.id} item={item} compact />)}{dayItems.length > 6 && <small className="more-count">+{dayItems.length - 6}개 더 있음</small>}{!dayItems.length && !rest && <span className="empty-day">여유</span>}</div>
-          <footer><Clock3 size={13} /> 완료 {formatStudyMinutes(dayActual)} · 계획 {formatStudyMinutes(dayPlanned)}</footer>
+          <footer><Clock3 size={13} /> 기록 {formatStudyMinutes(dayActual)} · 계획 {formatStudyMinutes(dayPlanned)}</footer>
         </article>
       })}
     </section>

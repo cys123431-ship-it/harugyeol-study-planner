@@ -121,6 +121,11 @@ button, input, select, textarea { border-radius: 0; }
 .status-missed, .status-carried { background: var(--apricot-soft); color: #966348; }
 .schedule-main > svg { color: #98a29d; transition: transform .2s; }
 .schedule-main > svg.rotated { transform: rotate(180deg); }
+.schedule-timer-launch { grid-column: 2; justify-self: start; min-height: 29px; margin: -5px 6px 10px 15px; padding: 0 10px; border: 1px solid #cddbd5; border-radius: 16px; background: #f5f9f7; color: var(--mint-dark); display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 720; }
+.schedule-timer-launch:hover { background: var(--mint-soft); border-color: #a9c9c0; }
+.schedule-timer-launch.timer-running { color: white; background: var(--mint-dark); border-color: var(--mint-dark); animation: timer-pulse 1.8s ease-in-out infinite; }
+.schedule-timer-launch.timer-success { color: #8c5b37; background: #faeee5; border-color: #e8c9b4; }
+@keyframes timer-pulse { 50% { box-shadow: 0 0 0 4px rgba(57, 118, 108, .1); } }
 .schedule-detail { grid-column: 2; padding: 0 16px 20px; }
 .detail-stats { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 11px; padding: 5px 0 13px; }
 .detail-stats span { display: flex; align-items: center; gap: 5px; }
@@ -453,18 +458,27 @@ button, input, select, textarea { border-radius: 0; }
 .confirmation dt { color: var(--muted); font-size: 9px; }
 .confirmation dd { margin: 0; font-size: 11px; font-weight: 720; }
 
-.timer-dialog { width: min(475px, 100%); padding-bottom: 24px; }
+.timer-dialog { width: min(500px, 100%); padding-bottom: 22px; }
 .timer-dialog > header { border: 0; }
-.timer-mode { display: flex; margin: 5px auto 20px; width: fit-content; }
+.timer-item-select { margin-top: 4px; margin-bottom: 15px; }
+.timer-mode { display: flex; margin: 5px auto 18px; width: fit-content; }
+.timer-mode button { display: inline-flex; align-items: center; gap: 6px; }
 .timer-face { width: 220px; height: 220px; margin: 0 auto 17px; position: relative; display: grid; place-items: center; }
 .timer-face svg { position: absolute; inset: 0; transform: rotate(-90deg); }
 .timer-track, .timer-progress { fill: none; stroke-width: 7; }
 .timer-track { stroke: #e9ede8; }
 .timer-progress { stroke: var(--mint); stroke-linecap: round; transition: stroke-dashoffset .5s linear; }
+.timer-face.success .timer-progress { stroke: #d18c63; }
+.timer-face.success span { color: #9a603e; }
 .timer-face > div { display: flex; flex-direction: column; align-items: center; }
 .timer-face span { font-family: Georgia, serif; font-size: 43px; letter-spacing: .02em; }
 .timer-face small { color: var(--muted); font-size: 10px; margin-top: 5px; }
-.duration-options { display: flex; justify-content: center; gap: 7px; margin-bottom: 19px; }
+.timer-target-editor { margin: 0 28px 17px; padding: 14px; border: 1px solid #dce5df; border-radius: 10px; background: #f8faf7; }
+.timer-target-editor > label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #53605a; font-size: 11px; font-weight: 730; }
+.target-input { display: inline-flex; align-items: center; border: 1px solid #d7dfd8; border-radius: 8px; background: white; overflow: hidden; }
+.target-input input { width: 72px; min-height: 36px; border: 0; padding: 0 8px; text-align: right; outline: 0; }
+.target-input em { padding: 0 10px 0 2px; color: var(--muted); font-size: 10px; font-style: normal; }
+.duration-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
 .duration-options button { border: 1px solid var(--line); background: transparent; border-radius: 20px; min-height: 30px; padding: 0 10px; font-size: 10px; color: var(--muted); }
 .duration-options button.active { border-color: var(--mint); color: var(--mint-dark); background: var(--mint-soft); }
 .timer-dialog > .field, .timer-dialog > .secondary-button { margin-left: 28px; margin-right: 28px; }
@@ -473,7 +487,12 @@ button, input, select, textarea { border-radius: 0; }
 .timer-reset { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: #edf0ec; color: var(--muted); }
 .timer-reset svg { width: 18px; }
 .timer-main { min-height: 50px; padding: 0 26px; border-radius: 25px; background: var(--mint-dark); color: white; display: flex; align-items: center; gap: 9px; font-weight: 720; }
+.timer-main.stop { background: #9d6548; }
 .timer-main svg { width: 18px; }
+.timer-record-summary { margin: 0 28px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--soft-line); border-bottom: 1px solid var(--soft-line); }
+.timer-record-summary span { padding: 11px 7px; display: flex; flex-direction: column; gap: 4px; text-align: center; color: var(--muted); font-size: 9px; }
+.timer-record-summary strong { color: var(--ink); font-size: 11px; }
+.timer-persistence-note { margin: 0 28px; text-align: center; color: var(--muted); font-size: 9px; line-height: 1.5; }
 
 .toast { position: fixed; z-index: 260; left: calc(var(--sidebar) + 28px); bottom: 25px; max-width: min(430px, calc(100vw - 40px)); min-height: 47px; display: flex; align-items: center; gap: 9px; padding: 9px 10px 9px 14px; background: #293c36; color: white; border-radius: 10px; box-shadow: 0 12px 30px rgba(33, 48, 41, .25); font-size: 12px; animation: toast-in .25s ease; }
 @keyframes toast-in { from { transform: translateY(10px); opacity: 0; } }
@@ -611,6 +630,11 @@ button, input, select, textarea { border-radius: 0; }
   .schedule-detail { grid-column: 1 / -1; padding-left: 10px; }
   .schedule-edit-grid { grid-template-columns: 1fr 1fr; }
   .schedule-edit-grid .full { grid-column: 1 / -1; }
+  .schedule-timer-launch { margin-left: 8px; }
+  .timer-dialog > .timer-item-select, .timer-target-editor, .timer-record-summary, .timer-persistence-note { margin-left: 18px; margin-right: 18px; }
+  .timer-face { width: 200px; height: 200px; }
+  .timer-record-summary { grid-template-columns: 1fr 1fr; }
+  .timer-record-summary span:last-child { grid-column: 1 / -1; border-top: 1px solid var(--soft-line); }
   .week-summary-line > div { padding: 14px; }
   .month-tools { align-items: flex-start; flex-direction: column; }
   .month-tools > label, .month-tools .date-nav { width: 100%; }
